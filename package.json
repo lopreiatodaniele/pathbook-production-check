@@ -1,0 +1,12 @@
+{
+  "name": "pathbook-release-desk", "private": true, "type": "module", "packageManager": "bun@1.4.2",
+  "scripts": {
+    "build": "bun scripts/build.mjs", "source:check": "bun scripts/source-check.mjs",
+    "artifact:check": "bun scripts/artifact-check.mjs", "test": "bun scripts/test.mjs",
+    "check": "bun run source:check && bun run build && bun run artifact:check && bun run test",
+    "dev": "bun server.mjs", "promote": "bun scripts/promote.mjs",
+    "browser": "bun --bun playwright test", "gate": "bun run check && bun run browser",
+    "smoke": "bun scripts/smoke.mjs"
+  },
+  "devDependencies": { "@playwright/test": "1.64.0" }
+}

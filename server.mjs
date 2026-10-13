@@ -1,0 +1,3 @@
+import path from"node:path";import{root,buildRelease}from"./scripts/build.mjs";import{promote}from"./scripts/promote.mjs";import{handler}from"./src/server.mjs";
+const stateRoot=path.join(root,"state");await buildRelease("baseline","ready");await buildRelease("exercise-fault","unavailable");
+for(const[channel,port]of[["staging",4260],["production",4261]]){try{await Bun.file(path.join(stateRoot,channel+".json")).json();}catch{await promote(channel,"baseline",stateRoot);}Bun.serve({hostname:"127.0.0.1",port,fetch:handler(channel,stateRoot)});console.log(channel+": http://127.0.0.1:"+port+"/release-desk/");}

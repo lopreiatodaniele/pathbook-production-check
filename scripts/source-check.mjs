@@ -1,0 +1,4 @@
+import fs from"node:fs/promises";import path from"node:path";import vm from"node:vm";import assert from"node:assert/strict";import{spawnSync}from"node:child_process";import{root}from"./build.mjs";
+const files=(await fs.readdir(root,{recursive:true})).filter(name=>/\.(mjs|js)$/.test(name)&&!/^node_modules|^releases|^state|^dist|^test-results|^playwright-report/.test(name));
+for(const name of files){const result=spawnSync(process.execPath,["build",path.join(root,name),"--target=bun","--external=*","--outfile="+path.join(root,"state","syntax.js")],{encoding:"utf8"});assert.equal(result.status,0,result.stderr);}
+new vm.Script((await fs.readFile(path.join(root,"src/client.js"),"utf8")).replace(/^import .*;\n/,""));assert.equal(Bun.version,"1.4.2");console.log("Parsed "+files.length+" authored JS files; pinned Bun, not typechecking or linting.");

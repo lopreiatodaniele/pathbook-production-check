@@ -1,0 +1,6 @@
+import assert from"node:assert/strict";import fs from"node:fs/promises";
+const{RECOVERY_RUN,RECOVERY_SHA,GITHUB_REPOSITORY,GITHUB_TOKEN,GITHUB_OUTPUT}=process.env;assert(/^\d+$/.test(RECOVERY_RUN));assert(/^[a-f0-9]{40}$/.test(RECOVERY_SHA));assert(/^[\w.-]+\/[\w.-]+$/.test(GITHUB_REPOSITORY));assert(GITHUB_TOKEN&&GITHUB_OUTPUT);
+const headers={Authorization:`Bearer ${GITHUB_TOKEN}`,Accept:"application/vnd.github+json","User-Agent":"Pathbook-recovery-selection"};
+const api=async route=>{const r=await fetch(`https://api.github.com/repos/${GITHUB_REPOSITORY}${route}`,{headers});assert(r.ok,`Recovery lookup failed: ${r.status}`);return r.json();};
+const run=await api(`/actions/runs/${RECOVERY_RUN}`);assert.equal(run.status,"completed");assert.equal(run.conclusion,"success");assert.equal(run.head_sha,RECOVERY_SHA);assert.equal(run.head_branch,"main");assert.equal(run.path,".github/workflows/delivery.yml");assert.equal(run.event,"push");
+const artifacts=(await api(`/actions/runs/${RECOVERY_RUN}/artifacts`)).artifacts;const candidates=artifacts.filter(a=>a.name===`release-${RECOVERY_SHA}`&&!a.expired);assert.equal(candidates.length,1);await fs.appendFile(GITHUB_OUTPUT,`artifact_id=${candidates[0].id}\n`);console.log("Selected retained artifact from a successful same-repository main release; manifest verification still required.");
